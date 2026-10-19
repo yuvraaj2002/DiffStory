@@ -1,0 +1,65 @@
+<!doctype html>
+<!-- Source for banner.png. Render from this folder:
+     chrome --headless=new --hide-scrollbars --force-device-scale-factor=2 --window-size=1024,338
+            --virtual-time-budget=8000 --screenshot=banner.png banner.html -->
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=Patrick+Hand&display=block" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; background: #f8f4e9; }
+  .banner {
+    position: relative; width: 1024px; height: 338px; overflow: hidden;
+    background: #f8f4e9 url("banner-art.png") no-repeat 0 0 / 1024px 338px;
+  }
+  .copy { position: absolute; left: 56px; top: 64px; width: 400px; }
+  .eyebrow {
+    font: 600 10.5px/1 "Inter", sans-serif; letter-spacing: 0.22em;
+    color: #8a8374; text-transform: uppercase; margin-bottom: 12px;
+  }
+  h1 {
+    margin: 0; font-family: "Instrument Serif", serif; font-weight: 400;
+    font-size: 84px; line-height: 0.95; letter-spacing: -0.015em; color: #1c1b19;
+  }
+  h1 em { font-style: italic; }
+  .tagline {
+    margin: 16px 0 0; font: 400 16px/1.45 "Inter", sans-serif;
+    color: #55514a; letter-spacing: -0.005em;
+  }
+  .pill {
+    display: inline-flex; align-items: center; gap: 7px; margin-top: 20px;
+    padding: 6px 12px; border: 1px solid #d9d2c2; border-radius: 999px;
+    font: 500 11.5px/1 "Inter", sans-serif; color: #55514a; background: rgba(255,255,255,0.35);
+  }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: #e9a23b; box-shadow: 0 0 6px #f2b552; }
+
+  /* Hand-lettered dialogue placed inside the bubbles drawn in banner-art.png */
+  .hand {
+    position: absolute; font-family: "Patrick Hand", cursive; text-align: center;
+    transform: translate(-50%, -50%); white-space: nowrap;
+  }
+  .say { left: 941px; top: 75px; font-size: 14.5px; line-height: 1.05; color: #1c1b19; }
+  .think { left: 595px; top: 230px; font-size: 9.5px; line-height: 1; color: #3d3a35; }
+  .label { left: 428px; top: 252px; font-size: 11px; color: #6f6a60; transform: rotate(-6deg); }
+  .arrow { position: absolute; left: 446px; top: 261px; }
+</style>
+</head>
+<body>
+  <div class="banner">
+    <div class="copy">
+      <div class="eyebrow">Introducing</div>
+      <h1>Diff<em>Story</em></h1>
+      <p class="tagline">Stop asking what to post.<br>Your commits already wrote it.</p>
+      <div class="pill"><span class="dot"></span>A Claude Code skill</div>
+    </div>
+
+    <div class="hand say">You're sitting on<br>the post, genius.</div>
+    <div class="hand think">what do I<br>even post?</div>
+    <div class="hand label">47 commits</div>
+    <svg class="arrow" width="30" height="26" viewBox="0 0 30 26" fill="none" stroke="#6f6a60" stroke-width="1" stroke-linecap="round">
+      <path d="M2 4 C 12 4, 20 10, 25 21"/>
+      <path d="M21 18.5 L25 21 L25.8 16.4"/>
+    </svg>
+  </div>
+</body>
+</html>

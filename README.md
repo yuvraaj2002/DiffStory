@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/banner.png" alt="DiffStory: your diff has a story. We'll make you tell it." width="100%"></p>
+<p align="center"><img src="assets/banner.png" alt="DiffStory: stop asking what to post. Your commits already wrote it." width="100%"></p>
 
 <p align="center">
   <strong>Your session tells the story. Your diff keeps it honest.</strong><br>

@@ -1,0 +1,450 @@
+<!doctype html>
+<!-- Source for diffstory-motion.mp4 (1080x1080, 42s, 30fps): a motion comic built from the
+     Kling stills in clips/, the /diffstory demo, and the end card.
+     window.render(t) draws the frame at t seconds; `node render.mjs motion` steps it frame by frame.
+     Open in a browser to preview (plays in real time; click to restart). -->
+<html>
+<head>
+<meta charset="utf-8">
+<title>DiffStory Motion Comic</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=Patrick+Hand&family=JetBrains+Mono:wght@400;600&display=block" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/roughjs@4.6.6/bundled/rough.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; background: #f8f4e9; }
+  #stage { position: relative; width: 1080px; height: 1080px; overflow: hidden; background: #f8f4e9; }
+  .scene, .sub { position: absolute; inset: 0; }
+  .shot { position: absolute; left: 0; top: 0; width: 1080px; height: 1080px; transform-origin: 0 0; }
+  .shot > img { position: absolute; left: 0; top: 0; width: 1080px; height: 1080px; }
+  .shotwrap { position: absolute; inset: 0; overflow: hidden; }
+  svg.layer { position: absolute; left: 0; top: 0; width: 1080px; height: 1080px; overflow: visible; }
+  .abs { position: absolute; }
+  .serif { font-family: "Instrument Serif", serif; font-weight: 400; color: #1c1b19; }
+  .hand { font-family: "Patrick Hand", cursive; color: #1c1b19; }
+  .inter { font-family: "Inter", sans-serif; }
+  .mono { font-family: "JetBrains Mono", monospace; }
+  .caption { left: 0; width: 1080px; text-align: center; font-size: 72px; line-height: 1; letter-spacing: -0.015em; }
+  .box {
+    position: absolute; background: #fffdf7; border: 3px solid #1c1b19; box-shadow: 6px 6px 0 #1c1b19;
+    padding: 14px 26px 16px; font-family: "Instrument Serif", serif; font-size: 50px; line-height: 1.02;
+    color: #1c1b19; white-space: nowrap; transform-origin: 0 0;
+  }
+  .sfx { font-family: "Patrick Hand", cursive; font-size: 54px; color: #1c1b19; transform-origin: 50% 50%; }
+  .eyebrow { font: 600 16px/1 "Inter", sans-serif; letter-spacing: 0.22em; color: #8a8374; text-transform: uppercase; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px;
+    border: 1.5px solid #d9d2c2; border-radius: 999px; background: rgba(255,255,255,0.5);
+    font: 500 19px/1 "Inter", sans-serif; color: #55514a; margin-right: 10px;
+  }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #e9a23b; box-shadow: 0 0 8px #f2b552; }
+  .mascot { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+  .term { left: 130px; top: 296px; width: 830px; font-size: 24px; line-height: 42px; color: #e9e4d8; white-space: pre; }
+  .cardhead { display: flex; justify-content: space-between; width: 620px; }
+  .draft { font: 400 26px/1.42 "Inter", sans-serif; color: #1c1b19; width: 620px; margin-top: 16px; white-space: pre-wrap; }
+  .grain { position: absolute; inset: 0; pointer-events: none; opacity: 0.05; }
+  #flash { position: absolute; inset: 0; background: #fff; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- Manga shots (Kling stills). Overlays inside .shot move with the camera. -->
+  <div class="shotwrap" id="w1"><div class="shot" id="k1">
+    <img src="clips/shot1.png">
+    <svg class="layer" id="k1svg"></svg>
+    <div class="abs sfx" id="tak1" style="left:770px; top:600px">tak</div>
+    <div class="abs sfx" id="tak2" style="left:840px; top:560px">tak</div>
+    <div class="abs sfx" id="tak3" style="left:905px; top:615px">tak!</div>
+  </div></div>
+
+  <div class="shotwrap" id="w2"><div class="shot" id="k2">
+    <img src="clips/shot2.png">
+    <div class="abs hand" id="think" style="left:722px; top:178px; width:176px; text-align:center; font-size:38px; line-height:1.0"></div>
+  </div></div>
+
+  <div class="shotwrap" id="w3"><div class="shot" id="k3">
+    <img src="clips/shot3.png">
+    <svg class="layer" id="k3svg"></svg>
+    <div class="abs hand" id="say3" style="left:80px; top:205px; width:440px; text-align:center; font-size:40px; line-height:1.05">Your commits already<br>wrote it, genius.</div>
+  </div></div>
+
+  <div class="shotwrap" id="w4"><div class="shot" id="k4">
+    <img src="clips/shot4.png">
+    <svg class="layer" id="k4svg"></svg>
+  </div></div>
+
+  <div class="shotwrap" id="w5"><div class="shot" id="k5">
+    <img src="clips/shot5.png">
+    <svg class="layer" id="k5svg"></svg>
+    <div class="abs hand" id="say5" style="left:660px; top:405px; width:220px; text-align:center; font-size:40px">Told you.</div>
+  </div></div>
+
+  <!-- Screen-fixed manga caption boxes -->
+  <div class="box" id="cap1" style="left:56px; top:56px">You shipped all week.</div>
+  <div class="box" id="cap2" style="left:56px; top:900px">…and posted <em>nothing.</em></div>
+  <div class="box" id="cap4" style="left:56px; top:56px">It turns the pile into <em>posts.</em></div>
+  <div class="box" id="cap5" style="left:540px; top:70px">You ship. It writes. <em>You post.</em></div>
+
+  <!-- Demo: how it works -->
+  <div class="scene" id="s3" style="background:#f8f4e9">
+    <div class="abs eyebrow" id="e3" style="left:0; width:1080px; text-align:center; top:84px">Meet DiffStory</div>
+    <div class="abs serif caption" id="c3a" style="top:118px; font-size:64px">Type one command.</div>
+    <div class="abs serif caption" id="c3b" style="top:118px; font-size:64px">It finds the lesson in your work.</div>
+    <div class="abs serif caption" id="c3c" style="top:118px; font-size:64px">…and drafts the post. <em>You</em> hit publish.</div>
+
+    <div class="sub" id="s3a">
+      <svg class="layer" id="s3asvg"></svg>
+      <div class="abs mono term" id="term"></div>
+      <div class="abs" id="idea" style="left:335px; top:648px; width:620px">
+        <div class="eyebrow" style="font-size:14px">Idea card 1 of 4</div>
+        <div class="serif" style="font-size:40px; line-height:1.05; margin:12px 0 22px">Date-only ranges silently drop your morning commits</div>
+        <div><span class="pill" id="pscore">Score 8/10</span><span class="pill">Confidence: High</span><span class="pill" style="color:#3f7d52; border-color:#b9dcc2">✓ Verified</span></div>
+      </div>
+    </div>
+
+    <div class="sub" id="s3b">
+      <svg class="layer" id="s3bsvg"></svg>
+      <div class="abs" id="xcard" style="left:335px; top:258px">
+        <div class="cardhead"><span class="eyebrow" style="font-size:14px">X draft</span><span class="eyebrow" style="font-size:14px" id="xcount"></span></div>
+        <div class="draft" id="xtext"></div>
+      </div>
+      <div class="abs" id="licard" style="left:335px; top:598px; height:280px; overflow:hidden; -webkit-mask-image:linear-gradient(#000 75%, transparent)">
+        <div class="cardhead"><span class="eyebrow" style="font-size:14px">LinkedIn draft</span><span class="eyebrow" style="font-size:14px">~150 words</span></div>
+        <div class="draft" id="litext" style="font-size:24px"></div>
+      </div>
+    </div>
+    <svg class="layer" id="s3msvg"></svg>
+    <div class="abs hand" id="sayd" style="left:40px; top:690px; width:250px; text-align:center; font-size:30px; line-height:1.05">Drafts only.<br>You post it.</div>
+  </div>
+
+  <!-- End card -->
+  <div class="scene" id="s4">
+    <svg class="layer" id="s4svg"></svg>
+    <div class="abs eyebrow" id="e4" style="left:0; width:1080px; text-align:center; top:212px; font-size:18px">Introducing</div>
+    <div class="abs serif caption" id="title" style="top:244px; font-size:180px; line-height:0.95; padding-bottom:40px">Diff<em>Story</em></div>
+    <div class="abs inter" id="tag" style="left:0; width:1080px; text-align:center; top:450px; font-size:32px; line-height:1.45; color:#55514a">Stop asking what to post.<br>Your commits already wrote it.</div>
+    <div class="abs" id="pill4" style="left:0; width:1080px; text-align:center; top:572px"><span class="pill" style="margin:0"><span class="dot"></span>A Claude Code skill</span></div>
+    <div class="abs mono" id="url" style="left:0; width:1080px; text-align:center; top:672px; font-size:30px; color:#1c1b19">github.com/yuvraaj2002/DiffStory</div>
+    <div class="abs inter" id="foot" style="left:0; width:1080px; text-align:center; top:756px; font-size:19px; color:#8a8374">Free · Open source · Drafts only, never posts</div>
+    <div class="abs hand" id="say4" style="left:560px; top:885px; width:260px; text-align:center; font-size:34px">You're welcome.</div>
+  </div>
+
+  <img class="mascot" id="mFront" src="front.png">
+  <img class="mascot" id="mIdea" src="idea.png">
+
+  <div id="flash"></div>
+  <svg class="grain" width="1080" height="1080"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4"/><feColorMatrix type="saturate" values="0"/></filter><rect width="1080" height="1080" filter="url(#n)"/></svg>
+</div>
+
+<script>
+const DURATION = window.DURATION = 42;
+const $ = id => document.getElementById(id);
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const prog = (t, t0, dur) => clamp((t - t0) / dur);
+const lerp = (a, b, p) => a + (b - a) * p;
+const easeOut = p => 1 - Math.pow(1 - p, 3);
+const easeIn = p => p * p * p;
+const easeInOut = p => p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+const easeBack = p => { const c = 1.6; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
+const INK = "#3d3a35", GRAPHITE = "#6b665d", PAPER = "#fffdf7";
+
+// Timeline (global seconds). The demo and end card keep launch.html's local timing, shifted.
+const T = { s1: [0, 5.7], s2: [5.4, 10.7], s3: [10.6, 15.9], s4: [15.6, 20.7], s5: [32.1, 37.3] };
+const O3 = 8.4;   // demo: local 11.9 → global 20.3
+const O4 = 12.7;  // end card: local 24.1 → global 36.8
+
+// ---------- sketch helpers ----------
+const drawables = [];
+let seed = 7;
+function sk(svg, make, t0, dur, off = 0) {
+  const rc = rough.svg(svg);
+  const node = make(rc, ++seed);
+  svg.appendChild(node);
+  const paths = [...node.querySelectorAll("path")];
+  paths.forEach(p => {
+    if (p.getAttribute("stroke") === "none") p.dataset.fill = "1";
+    else { p.setAttribute("pathLength", "1"); p.style.strokeDasharray = "1 1"; }
+  });
+  drawables.push({ paths, t0: t0 + off, dur });
+  return node;
+}
+function drawSketches(t) {
+  for (const d of drawables) {
+    const p = d.dur ? prog(t, d.t0, d.dur) : (t >= d.t0 ? 1 : 0);
+    for (const el of d.paths) {
+      if (el.dataset.fill) el.style.opacity = easeOut(p);
+      else { el.style.strokeDashoffset = 1 - easeInOut(p); el.style.opacity = p > 0 ? 1 : 0; }
+    }
+  }
+}
+const o = (extra) => Object.assign({ roughness: 1.4, stroke: INK, strokeWidth: 2.2, bowing: 1.2 }, extra);
+function fade(el, t, t0, dur = 0.5, rise = 18) {
+  const p = easeOut(prog(t, t0, dur));
+  el.style.opacity = p;
+  el.style.transform = `translateY(${(1 - p) * rise}px)`;
+  return p;
+}
+function fadeOut(el, t, t0, dur = 0.4) { if (t > t0) el.style.opacity = Math.min(+el.style.opacity, 1 - prog(t, t0, dur)); }
+const shake = (t, amp) => [amp * (Math.sin(t * 91.3) + Math.sin(t * 47.7)) / 2, amp * (Math.sin(t * 73.1) + Math.sin(t * 39.9)) / 2];
+
+// Manga caption box: pops in with a slight tilt, then leaves with the shot
+function capBox(el, t, tin, tout, tilt = -1.5) {
+  const p = easeBack(prog(t, tin, 0.45)), q = prog(t, tout, 0.3);
+  el.style.opacity = clamp(prog(t, tin, 0.2)) * (1 - q);
+  el.style.transform = `rotate(${tilt}deg) scale(${lerp(0.82, 1, p)})`;
+}
+
+// ---------- camera for manga shots ----------
+// Shows the region centered on (cx, cy) of the 1080 frame at zoom z (z >= 1 keeps the frame filled).
+function camera(id, t, win, cx, cy, z, fadeIn = 0.35, fadeOutDur = 0.35, extra = [0, 0]) {
+  const w = $("w" + id), k = $("k" + id);
+  const vis = t >= win[0] && t < win[1];
+  w.style.display = vis ? "block" : "none";
+  if (!vis) return;
+  w.style.opacity = prog(t, win[0], fadeIn || 1e-6) * (1 - prog(t, win[1] - fadeOutDur, fadeOutDur || 1e-6));
+  const half = 540 / z;
+  cx = clamp(cx, half, 1080 - half); cy = clamp(cy, half, 1080 - half);
+  k.style.transform = `translate(${540 - cx * z + extra[0]}px, ${540 - cy * z + extra[1]}px) scale(${z})`;
+}
+
+// ---------- shot 1: the grind ----------
+const k1svg = $("k1svg");
+const falling = [];
+for (let i = 0; i < 7; i++) {
+  const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  k1svg.appendChild(g);
+  sk(g, (rc, sd) => rc.rectangle(-22, -28, 44, 56, o({ seed: sd, fill: PAPER, fillStyle: "solid", stroke: GRAPHITE, strokeWidth: 1.4 })), -1);
+  [-12, -2, 8].forEach(ly => sk(g, (rc, sd) => rc.line(-14, ly, 12, ly, o({ seed: sd, stroke: "#a39d90", strokeWidth: 1.2, roughness: 0.8 })), -1));
+  falling.push({ g, x: 230 + ((i * 61) % 380), t0: 0.3 + i * 0.62, spin: (i % 2 ? 1 : -1) * (120 + i * 25), sway: 18 + (i % 3) * 10 });
+}
+function shot1(t) {
+  const p = easeInOut(prog(t, 0, 5.7));
+  camera(1, t, T.s1, lerp(540, 600, p), lerp(500, 560, p), lerp(1.12, 1.32, p), 0, 0.01);
+  for (const f of falling) {
+    const q = prog(t, f.t0, 2.4);
+    const y = lerp(-80, 760, q * q);
+    f.g.setAttribute("transform", `translate(${f.x + Math.sin(q * 6) * f.sway},${y}) rotate(${f.spin * q})`);
+    f.g.style.opacity = q > 0 && q < 1 ? 1 - clamp((q - 0.8) / 0.2) : 0;
+  }
+  [["tak1", 1.2], ["tak2", 1.5], ["tak3", 1.8], ["tak1", 3.4], ["tak2", 3.65], ["tak3", 3.9]].forEach(([id, ts], i) => {
+    const el = $(id), age = t - ts;
+    if (i < 3 && t >= 3.4) return;        // second burst reuses the same words
+    const on = age >= 0 && age < 1.1;
+    el.style.opacity = on ? 1 - clamp((age - 0.8) / 0.3) : 0;
+    el.style.transform = `scale(${on ? lerp(0.5, 1, easeBack(clamp(age / 0.25))) : 0}) rotate(${(i % 3 - 1) * 8}deg)`;
+  });
+  capBox($("cap1"), t, 0.4, 5.3);
+}
+
+// ---------- shot 2: the blank post ----------
+const THINK = "what do I\neven\npost?";
+function shot2(t) {
+  const p = easeInOut(prog(t, 5.4, 5.3));
+  const sh = t > 8.6 && t < 9.0 ? shake(t, 6) : [0, 0];
+  camera(2, t, T.s2, lerp(540, 640, p), lerp(520, 420, p), lerp(1.1, 1.3, p), 0.01, 0.01, sh);
+  // diagonal panel wipe from shot 1
+  const wp = easeInOut(prog(t, 5.4, 0.45));
+  const top = lerp(0, 160, wp), bot = lerp(-60, 100, wp);
+  $("w2").style.clipPath = wp < 1 ? `polygon(0 0, ${top}% 0, ${bot}% 100%, 0 100%)` : "none";
+  const n = Math.floor(THINK.length * prog(t, 6.6, 1.0));
+  $("think").innerHTML = THINK.slice(0, n).replace(/\n/g, "<br>");
+  capBox($("cap2"), t, 7.6, 10.3, 1.2);
+}
+
+// ---------- shot 3: the mascot arrives ----------
+const k3svg = $("k3svg");
+sk(k3svg, (rc, sd) => rc.ellipse(300, 255, 500, 180, o({ seed: sd, fill: "#ffffff", fillStyle: "solid", strokeWidth: 2.8 })), 12.1, 0.4);
+sk(k3svg, (rc, sd) => rc.linearPath([[525, 225], [640, 205], [530, 280]], o({ seed: sd, strokeWidth: 2.8 })), 12.4, 0.2);
+function shot3(t) {
+  const pin = easeInOut(prog(t, 10.9, 1.1));
+  const drift = easeInOut(prog(t, 12.0, 3.9));
+  const cx = lerp(lerp(715, 560, pin), 520, drift), cy = lerp(lerp(340, 560, pin), 580, drift);
+  const z = lerp(lerp(1.6, 1.04, pin), 1.08, drift);
+  const sh = t < 11.3 ? shake(t, 14 * (1 - prog(t, 10.6, 0.7))) : [0, 0];
+  camera(3, t, T.s3, cx, cy, z, 0.01, 0.01, sh);
+  fade($("say3"), t, 12.5, 0.35, 0);
+}
+
+// ---------- shot 4: the magic ----------
+const k4svg = $("k4svg");
+const sparks = [];
+for (let i = 0; i < 26; i++) {
+  const a = i * 2.39996, r = 60 + (i * 37) % 260;
+  const x = 600 + Math.cos(a) * r * 1.2, y = 260 + Math.sin(a) * r * 0.8;
+  const s = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  s.setAttribute("d", "M0,-10 L2.5,-2.5 L10,0 L2.5,2.5 L0,10 L-2.5,2.5 L-10,0 L-2.5,-2.5 Z");
+  s.setAttribute("fill", i % 3 ? "#f2b552" : "#ffd27a");
+  s.style.filter = "drop-shadow(0 0 4px #f2b552)";
+  k4svg.appendChild(s);
+  sparks.push({ s, x, y, ph: i * 0.7, sz: 0.6 + (i % 4) * 0.25, t0: 15.9 + (i % 9) * 0.18 });
+}
+function shot4(t) {
+  const p = easeInOut(prog(t, 15.6, 4.4));
+  const dive = easeIn(prog(t, 20.0, 0.7));
+  const cx = lerp(lerp(540, 600, p), 740, dive), cy = lerp(lerp(560, 470, p), 215, dive);
+  camera(4, t, T.s4, cx, cy, lerp(lerp(1.02, 1.15, p), 3.2, dive), 0.35, 0.01);
+  for (const sp of sparks) {
+    const age = t - sp.t0;
+    const tw = Math.max(0, Math.sin(age * 4 + sp.ph));
+    sp.s.style.opacity = age > 0 ? tw : 0;
+    sp.s.setAttribute("transform", `translate(${sp.x},${sp.y - age * 14}) scale(${sp.sz * (0.5 + tw * 0.7)}) rotate(${age * 40})`);
+  }
+  capBox($("cap4"), t, 16.3, 19.7);
+}
+
+// ---------- shot 5: the payoff ----------
+const k5svg = $("k5svg");
+sk(k5svg, (rc, sd) => rc.ellipse(770, 430, 250, 100, o({ seed: sd, fill: "#ffffff", fillStyle: "solid", strokeWidth: 2.6 })), 33.6, 0.35);
+sk(k5svg, (rc, sd) => rc.linearPath([[840, 470], [895, 540], [868, 466]], o({ seed: sd, strokeWidth: 2.6 })), 33.85, 0.15);
+function shot5(t) {
+  const p = easeInOut(prog(t, 32.1, 5.2));
+  camera(5, t, T.s5, lerp(520, 570, p), lerp(560, 520, p), lerp(1.06, 1.14, p), 0.45, 0.5);
+  fade($("say5"), t, 33.95, 0.3, 0);
+  capBox($("cap5"), t, 32.7, 36.6, 1);
+  $("cap5").style.left = (540 - $("cap5").offsetWidth / 2) + "px";
+}
+
+// ---------- demo: terminal, idea card, drafts (launch.html scene 3, local time) ----------
+const s3a = $("s3asvg"), s3b = $("s3bsvg"), s3m = $("s3msvg");
+sk(s3a, (rc, sd) => rc.rectangle(90, 230, 900, 350, o({ seed: sd, fill: "#24221f", fillStyle: "solid", stroke: "#1c1b19", strokeWidth: 2.6, roughness: 1.1 })), 12.25, 0.6, O3);
+["#e88b84", "#e9c46a", "#8fd19e"].forEach((c, i) =>
+  sk(s3a, (rc, sd) => rc.circle(122 + i * 30, 262, 15, { seed: sd, roughness: 0.8, stroke: "none", fill: c, fillStyle: "solid" }), 12.6, 0.2, O3));
+sk(s3a, (rc, sd) => rc.rectangle(300, 620, 690, 270, o({ seed: sd, fill: PAPER, fillStyle: "solid", stroke: "#55514a" })), 16.2, 0.55, O3);
+let scoreRing = null;
+sk(s3b, (rc, sd) => rc.rectangle(300, 232, 690, 306, o({ seed: sd, fill: PAPER, fillStyle: "solid", stroke: "#55514a" })), -100);
+sk(s3b, (rc, sd) => rc.rectangle(300, 572, 690, 320, o({ seed: sd, fill: PAPER, fillStyle: "solid", stroke: "#55514a" })), -100);
+sk(s3m, (rc, sd) => rc.ellipse(165, 735, 260, 112, o({ seed: sd, fill: "#ffffff", fillStyle: "solid" })), 21.2, 0.4, O3);
+sk(s3m, (rc, sd) => rc.linearPath([[140, 788], [150, 830], [180, 790]], o({ seed: sd })), 21.45, 0.15, O3);
+
+const TERM = [
+  { t: 14.0, c: "#8f897c", s: "Reading conversation + diffs…" },
+  { t: 14.45, c: "#e88b84", s: '-  git log --since="$FROM"' },
+  { t: 14.85, c: "#8fd19e", s: '+  git log --since="${FROM}T00:00:00"' },
+  { t: 15.25, c: "#8fd19e", s: '+            --until="${TO}T23:59:59"' },
+  { t: 15.75, c: "#e9a23b", s: "✓ 4 topics · 6 commits · secrets redacted" },
+];
+const XTEXT = 'git\'s --since with a bare date doesn\'t mean midnight. It means that day at the current time, so "since Oct 1" quietly skips every commit made earlier on Oct 1.\n\nPin T00:00:00 when you filter history by date.';
+const LITEXT = "A date filter in my tool was quietly losing data.\n\nThe cause: git reads a bare date in --since as \"that day, at the current time.\" Run it at 3pm and every morning commit simply vanishes from the range.\n\nThe fix was one line. Finding it took an afternoon.";
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+
+function demo(t) {
+  const s3 = $("s3");
+  s3.style.display = t >= 11.9 && t < 24.4 ? "block" : "none";
+  s3.style.opacity = prog(t, 11.9, 0.4) * (1 - prog(t, 23.7, 0.5));
+  fade($("e3"), t, 12.1, 0.5, 8);
+  fade($("c3a"), t, 12.2, 0.5); fadeOut($("c3a"), t, 16.0);
+  fade($("c3b"), t, 16.3, 0.5); fadeOut($("c3b"), t, 19.2);
+  fade($("c3c"), t, 19.5, 0.5);
+
+  const typed = "/diffstory".slice(0, Math.floor(clamp((t - 12.9) / 0.8) * 10));
+  const caret = t < 14 && Math.floor(t * 2.5) % 2 === 0 ? "▍" : "";
+  let html = t >= 12.6 ? `<span style="color:#e9a23b">❯</span> <span style="color:#fff;font-weight:600">${typed}</span>${caret}\n` : "";
+  for (const l of TERM) if (t >= l.t) html += `<span style="color:${l.c}">${esc(l.s)}</span>\n`;
+  $("term").innerHTML = html;
+
+  const idea = $("idea");
+  fade(idea.children[0], t, 16.6, 0.4, 8);
+  fade(idea.children[1], t, 16.8, 0.5, 10);
+  fade(idea.children[2], t, 17.3, 0.5, 10);
+  if (scoreRing) {
+    const p = prog(t, 17.9, 0.5);
+    scoreRing.querySelectorAll("path").forEach(el => { el.style.strokeDashoffset = 1 - easeInOut(p); el.style.opacity = p > 0 ? 1 : 0; });
+  }
+
+  const out = easeIn(prog(t, 19.0, 0.6));
+  $("s3a").style.transform = `translateX(${-1150 * out}px)`;
+  const xin = easeOut(prog(t, 19.35, 0.6)), lin = easeOut(prog(t, 19.75, 0.6));
+  $("s3b").style.display = t >= 19.35 ? "block" : "none";
+  s3b.children[0].setAttribute("transform", `translate(${900 * (1 - xin)},0)`);
+  $("xcard").style.transform = `translateX(${900 * (1 - xin)}px)`;
+  s3b.children[1].setAttribute("transform", `translate(${900 * (1 - lin)},0)`);
+  $("licard").style.transform = `translateX(${900 * (1 - lin)}px)`;
+  const xn = Math.floor(XTEXT.length * prog(t, 20.0, 2.0));
+  $("xtext").textContent = XTEXT.slice(0, xn);
+  $("xcount").textContent = `${xn} / 280`;
+  $("litext").textContent = LITEXT.slice(0, Math.floor(LITEXT.length * prog(t, 20.5, 2.6)));
+  fade($("sayd"), t, 21.55, 0.35, 6);
+}
+
+// ---------- end card (launch.html scene 4, local time) ----------
+const s4svg = $("s4svg");
+sk(s4svg, (rc, sd) => rc.rectangle(225, 652, 630, 76, o({ seed: sd, fill: PAPER, fillStyle: "solid", strokeWidth: 2.4 })), 26.0, 0.6, O4);
+sk(s4svg, (rc, sd) => rc.ellipse(690, 905, 280, 100, o({ seed: sd, fill: "#ffffff", fillStyle: "solid" })), 27.5, 0.4, O4);
+sk(s4svg, (rc, sd) => rc.linearPath([[815, 890], [862, 870], [818, 920]], o({ seed: sd })), 27.75, 0.15, O4);
+
+function endCard(t) {
+  $("s4").style.display = t >= 24.1 ? "block" : "none";
+  fade($("e4"), t, 24.3, 0.5, 8);
+  const p = easeInOut(prog(t, 24.5, 0.9));
+  const title = $("title");
+  title.style.clipPath = `inset(0 ${100 - p * 100}% 0 0)`;
+  title.style.opacity = p > 0 ? 1 : 0;
+  fade($("tag"), t, 25.3, 0.6);
+  fade($("pill4"), t, 25.8, 0.5);
+  fade($("url"), t, 26.4, 0.5, 0);
+  fade($("foot"), t, 26.8, 0.5, 8);
+  fade($("say4"), t, 27.8, 0.35, 6);
+}
+
+// ---------- mascot cutouts in the demo and end card ----------
+const M = { front: { el: $("mFront"), w: 302, h: 514 }, idea: { el: $("mIdea"), w: 171, h: 183 } };
+function placeMascot(m, cx, bottom, scale, opacity) {
+  const w = m.w * scale, h = m.h * scale;
+  m.el.style.opacity = opacity;
+  m.el.style.display = opacity > 0 ? "block" : "none";
+  m.el.style.transform = `translate(${cx - w / 2}px, ${bottom - h}px) scale(${scale})`;
+  m.el.style.filter = "drop-shadow(0 10px 14px rgba(60,50,30,0.18))";
+}
+function mascots(t3, t4) {
+  const bob3 = Math.sin(t3 * 2.4) * 5;
+  let f = 0, cx = 160, bottom = 1050, sc = 0.5;
+  if (t3 >= 12.0 && t3 < 20.2) {
+    const pin = prog(t3, 12.0, 0.5);
+    bottom = lerp(1350, 1050, easeBack(pin)) + bob3 * 0.5; f = 1 - prog(t3, 19.9, 0.3);
+  } else if (t4 >= 26.6) {
+    const pin = prog(t4, 26.6, 0.6);
+    cx = 930; bottom = lerp(1400, 1072, easeBack(pin)) + (pin >= 1 ? Math.sin(t4 * 2.4) * 3 : 0); sc = 0.56; f = 1;
+  }
+  placeMascot(M.front, cx, bottom, sc, f);
+  let fi = 0, ib = 1050;
+  if (t3 >= 19.9 && t3 < 24.2) {
+    const pin = prog(t3, 19.9, 0.45);
+    fi = clamp(pin * 3) * (1 - prog(t3, 23.7, 0.5));
+    ib = lerp(1110, 1050, easeBack(pin)) + bob3 * 0.5;
+  }
+  placeMascot(M.idea, 165, ib, 1.25, fi);
+}
+
+window.render = function (t) {
+  drawSketches(t);
+  shot1(t); shot2(t); shot3(t); shot4(t); shot5(t);
+  demo(t - O3); endCard(t - O4);
+  mascots(t - O3, t - O4);
+  // impact flash when the mascot lands
+  $("flash").style.opacity = t >= 10.6 ? 0.95 * (1 - prog(t, 10.6, 0.3)) : 0;
+};
+
+window.ready = (async () => {
+  await document.fonts.ready;
+  await Promise.all([...document.images].map(i => i.decode().catch(() => {})));
+  // amber ring around the score pill, sized to the laid-out text
+  const r = $("pscore").getBoundingClientRect(), st = $("stage").getBoundingClientRect();
+  const cx = r.left - st.left + r.width / 2, cy = r.top - st.top + r.height / 2;
+  scoreRing = rough.svg(s3a).ellipse(cx, cy, r.width + 34, r.height + 26, { seed: 99, roughness: 1.6, stroke: "#e9a23b", strokeWidth: 3.2 });
+  s3a.appendChild(scoreRing);
+  scoreRing.querySelectorAll("path").forEach(el => { el.setAttribute("pathLength", "1"); el.style.strokeDasharray = "1 1"; });
+  render(0);
+  return true;
+})();
+
+// Live preview when opened directly (not while rendering frames)
+if (!navigator.webdriver) {
+  window.ready.then(() => {
+    let start = performance.now();
+    document.addEventListener("click", () => (start = performance.now()));
+    const loop = now => { render(((now - start) / 1000) % (DURATION + 1)); requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  });
+}
+</script>
+</body>
+</html>

@@ -4,3 +4,9 @@ __pycache__/
 .venv/
 .env*
 DiffStory_PRD.md
+
+# Rendered videos (regenerate with assets/video/render.mjs)
+*.mp4
+
+# Temporary JPG/PNG copies for uploading to Kling
+assets/video/kling/

@@ -9,7 +9,7 @@ import sys
 import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
-from scan_sensitive import redact, scan  # noqa: E402
+from scan_sensitive import check_draft, redact, scan  # noqa: E402
 
 R = "aB3dE5fG7hJ9kL2mN4pQ6rS8tU0vW1xY"  # random-looking filler
 
@@ -30,6 +30,18 @@ class DetectsKnownFormats(unittest.TestCase):
         "slack-webhook": fake("https://hooks.", "slack.com/services/", "T000/B000/", R[:24]),
         "google-api-key": fake("AI", "za", R, "abc"),
         "jwt": fake("ey", "J", R[:16], ".ey", "J", R[:16], ".", R[:16]),
+        "stripe-webhook-secret": fake("wh", "sec_", R),
+        "discord-webhook": fake("https://discord.", "com/api/webhooks/", "123456/", R),
+        "google-oauth-secret": fake("GOC", "SPX-", R),
+        "huggingface-token": fake("h", "f_", R),
+        "groq-key": fake("gs", "k_", R, R[:12]),
+        "xai-key": fake("xa", "i-", R, R[:12]),
+        "replicate-token": fake("r8", "_", R),
+        "npm-token": fake("np", "m_", R, "abcd"),
+        "sendgrid-key": fake("S", "G.", R[:22], ".", R),
+        "twilio-key": fake("S", "K", "0123456789abcdef0123456789abcdef"),
+        "mailgun-key": fake("ke", "y-", "0123456789abcdef0123456789abcdef"),
+        "telegram-bot-token": fake("123456789", ":AA", R, "a"),
     }
 
     def test_each_format(self):
@@ -47,10 +59,16 @@ class DetectsKnownFormats(unittest.TestCase):
         # Line count is preserved, so "after" stays on line 6.
         self.assertEqual(text.splitlines()[5], "after")
 
-    def test_bearer_token(self):
-        text, findings = redact(f"Authorization: Bearer {R}\n")
-        self.assertNotIn(R, text)
-        self.assertEqual(findings[0].type, "bearer-token")
+    def test_header_tokens_keep_their_prefix(self):
+        for line, kind, kept in ((f"Authorization:  Bearer {R}", "bearer-token", "Authorization:  Bearer "),
+                                 (f"Authorization: Basic {R}==", "basic-auth", "Authorization: Basic "),
+                                 (fake("DefaultEndpointsProtocol=https;Account", "Key=", R, "=="),
+                                  "azure-storage-key", "AccountKey=")):
+            with self.subTest(kind=kind):
+                text, findings = redact(line)
+                self.assertEqual(text, f"{kept}[REDACTED:{kind}]" if kind != "azure-storage-key"
+                                 else f"DefaultEndpointsProtocol=https;AccountKey=[REDACTED:{kind}]")
+                self.assertEqual([f.type for f in findings], [kind])
 
 
 class DetectsGenericSecrets(unittest.TestCase):
@@ -65,6 +83,27 @@ class DetectsGenericSecrets(unittest.TestCase):
         text, findings = redact(f"+DATABASE_PASSWORD={R}\n")
         self.assertEqual(text, "+DATABASE_PASSWORD=[REDACTED:generic-secret]\n")
         self.assertEqual(len(findings), 1)
+
+    def test_assignment_forms(self):
+        cases = [
+            f"  db_password: {R}  # prod",     # YAML, trailing comment
+            f"-API_KEY={R}",                   # removed line in a diff
+            f"export SECRET_TOKEN={R}",
+            f"curl --api-key {R} https://x",   # command-line flag
+            f"https://x.io/cb?access_token={R}&page=2",
+            f"token := `{R}`",                 # Go
+        ]
+        for line in cases:
+            with self.subTest(line=line):
+                text, findings = redact(line)
+                self.assertNotIn(R, text)
+                self.assertEqual([f.type for f in findings], ["generic-secret"])
+
+    def test_password_fields_are_lenient(self):
+        # People choose passwords, so short, low-entropy ones still count.
+        for line in ("DB_PASS=Winter2026", "password = 'hunter2!'", "pwd: s3cret@1"):
+            with self.subTest(line=line):
+                self.assertEqual([f.type for f in scan(line)], ["generic-secret"])
 
     def test_url_password(self):
         text, findings = redact(f"url = postgres://admin:{R}@db.internal:5432/app")
@@ -84,6 +123,15 @@ class IgnoresHarmlessText(unittest.TestCase):
             "We fixed the date range so --since keeps commits from the start date.",
             "def get_secret_name(self):",
             "https://example.com/path?page=2",
+            'password = "password"',
+            "password: str",
+            "TOKEN=${{ secrets.GH_TOKEN }}",
+            "api_key = settings.API_KEY",
+            'api_key = os.environ["API_KEY"]',
+            "max_tokens: 4096",
+            "compass = north",
+            "postgres://user:password@localhost/db",
+            "Basic setup instructions follow",
         ]
         for line in harmless:
             with self.subTest(line=line):
@@ -102,6 +150,26 @@ class Reporting(unittest.TestCase):
         twice, findings = redact(once)
         self.assertEqual(once, twice)
         self.assertEqual(findings, [])
+
+
+class ChecksDrafts(unittest.TestCase):
+    def test_flags_internal_details(self):
+        draft = ("Fixed the bug in collect_git.py (6c02caa) for ys@corp.com.\n"
+                 f"It ran on api.internal, 10.0.0.12, and localhost:8080 with {R}.\n")
+        kinds = {f.type: f for f in check_draft(draft)}
+        self.assertEqual(set(kinds), {"file-name", "commit-hash", "email", "internal-host",
+                                      "ip-address", "high-entropy-string"})
+        self.assertEqual(kinds["file-name"].excerpt, "collect_git.py")
+        self.assertEqual(kinds["high-entropy-string"].line, 2)
+
+    def test_secrets_have_no_excerpt(self):
+        findings = check_draft(fake("token: gh", "p_", R, "1234"))
+        self.assertEqual([(f.type, f.excerpt) for f in findings], [("github-token", "")])
+
+    def test_clean_draft(self):
+        draft = ("Built it with Next.js and Node.js on Python 3.12. "
+                 "The diff kept the post honest: 3 commits, 120 lines, version 1.2.3.")
+        self.assertEqual(check_draft(draft), [])
 
 
 if __name__ == "__main__":

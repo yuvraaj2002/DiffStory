@@ -1,6 +1,4 @@
-<!-- Banner goes here once it exists: <p align="center"><img src="assets/banner.png" alt="DiffStory" width="100%"></p> -->
-
-<h1 align="center">DiffStory</h1>
+<p align="center"><img src="assets/banner.png" alt="DiffStory: your diff has a story. We'll make you tell it." width="100%"></p>
 
 <p align="center">
   <strong>Your session tells the story. Your diff keeps it honest.</strong><br>

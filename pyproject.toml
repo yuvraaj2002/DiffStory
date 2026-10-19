@@ -1,0 +1,5 @@
+[tool.basedpyright]
+# The scripts import each other by path (they run as plain files, not a package).
+extraPaths = ["scripts"]
+typeCheckingMode = "standard"
+pythonVersion = "3.10"

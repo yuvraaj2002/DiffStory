@@ -1,0 +1,377 @@
+<!doctype html>
+<!-- Source for diffstory-launch.mp4 (1080x1080, 30s, 30fps).
+     window.render(t) draws the frame at t seconds; render.mjs steps it frame by frame.
+     Open in a browser to preview (plays in real time; click to restart). -->
+<html>
+<head>
+<meta charset="utf-8">
+<title>DiffStory Launch</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=Patrick+Hand&family=JetBrains+Mono:wght@400;600&display=block" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/roughjs@4.6.6/bundled/rough.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; background: #f8f4e9; }
+  #stage { position: relative; width: 1080px; height: 1080px; overflow: hidden; background: #f8f4e9; }
+  .scene, .sub { position: absolute; inset: 0; }
+  svg.layer { position: absolute; left: 0; top: 0; width: 1080px; height: 1080px; overflow: visible; }
+  .abs { position: absolute; }
+  .serif { font-family: "Instrument Serif", serif; font-weight: 400; color: #1c1b19; }
+  .hand { font-family: "Patrick Hand", cursive; color: #1c1b19; }
+  .inter { font-family: "Inter", sans-serif; }
+  .mono { font-family: "JetBrains Mono", monospace; }
+  .caption { left: 0; width: 1080px; text-align: center; font-size: 72px; line-height: 1; letter-spacing: -0.015em; }
+  .eyebrow { font: 600 16px/1 "Inter", sans-serif; letter-spacing: 0.22em; color: #8a8374; text-transform: uppercase; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px;
+    border: 1.5px solid #d9d2c2; border-radius: 999px; background: rgba(255,255,255,0.5);
+    font: 500 19px/1 "Inter", sans-serif; color: #55514a; margin-right: 10px;
+  }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #e9a23b; box-shadow: 0 0 8px #f2b552; }
+  .mascot { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+  .term { left: 130px; top: 296px; width: 830px; font-size: 24px; line-height: 42px; color: #e9e4d8; white-space: pre; }
+  .cardhead { display: flex; justify-content: space-between; width: 620px; }
+  .draft { font: 400 26px/1.42 "Inter", sans-serif; color: #1c1b19; width: 620px; margin-top: 16px; white-space: pre-wrap; }
+  .grain { position: absolute; inset: 0; pointer-events: none; opacity: 0.05; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- Scene 1: the problem -->
+  <div class="scene" id="s1">
+    <svg class="layer" id="s1svg"></svg>
+    <div class="abs serif caption" id="c1a" style="top:96px">You shipped all week.</div>
+    <div class="abs serif caption" id="c1b" style="top:180px"><em>…and posted nothing.</em></div>
+    <div class="abs hand" id="count" style="left:90px; top:900px; width:430px; text-align:center; font-size:40px; color:#3d3a35"></div>
+    <div class="abs inter" id="placeholder" style="left:640px; top:668px; font-size:23px; color:#a39d90">What do you want to talk about?</div>
+    <div class="abs" id="cursor" style="left:636px; top:664px; width:3px; height:32px; background:#1c1b19"></div>
+    <div class="abs inter" id="postbtn" style="left:900px; top:770px; width:80px; text-align:center; font: 600 18px/1 Inter; color:#b7b0a2">Post</div>
+    <div class="abs hand" id="think" style="left:635px; top:415px; width:330px; text-align:center; font-size:38px; color:#3d3a35">what do I even post?</div>
+  </div>
+
+  <!-- Scene 2: the mascot -->
+  <div class="scene" id="s2">
+    <svg class="layer" id="s2svg"></svg>
+    <div class="abs hand" id="say2" style="left:190px; top:190px; width:700px; text-align:center; font-size:50px; line-height:1.05">Your commits already<br>wrote it, genius.</div>
+  </div>
+
+  <!-- Scene 3: how it works -->
+  <div class="scene" id="s3">
+    <div class="abs eyebrow" id="e3" style="left:0; width:1080px; text-align:center; top:84px">Meet DiffStory</div>
+    <div class="abs serif caption" id="c3a" style="top:118px; font-size:64px">Type one command.</div>
+    <div class="abs serif caption" id="c3b" style="top:118px; font-size:64px">It finds the lesson in your work.</div>
+    <div class="abs serif caption" id="c3c" style="top:118px; font-size:64px">…and drafts the post. <em>You</em> hit publish.</div>
+
+    <div class="sub" id="s3a">
+      <svg class="layer" id="s3asvg"></svg>
+      <div class="abs mono term" id="term"></div>
+      <div class="abs" id="idea" style="left:335px; top:648px; width:620px">
+        <div class="eyebrow" style="font-size:14px">Idea card 1 of 4</div>
+        <div class="serif" id="ideatitle" style="font-size:40px; line-height:1.05; margin:12px 0 22px">Date-only ranges silently drop your morning commits</div>
+        <div id="pills"><span class="pill" id="pscore">Score 8/10</span><span class="pill">Confidence: High</span><span class="pill" style="color:#3f7d52; border-color:#b9dcc2">✓ Verified</span></div>
+      </div>
+    </div>
+
+    <div class="sub" id="s3b">
+      <svg class="layer" id="s3bsvg"></svg>
+      <div class="abs" id="xcard" style="left:335px; top:258px">
+        <div class="cardhead"><span class="eyebrow" style="font-size:14px">X draft</span><span class="eyebrow" style="font-size:14px" id="xcount"></span></div>
+        <div class="draft" id="xtext"></div>
+      </div>
+      <div class="abs" id="licard" style="left:335px; top:598px; height:280px; overflow:hidden; -webkit-mask-image:linear-gradient(#000 75%, transparent)">
+        <div class="cardhead"><span class="eyebrow" style="font-size:14px">LinkedIn draft</span><span class="eyebrow" style="font-size:14px">~150 words</span></div>
+        <div class="draft" id="litext" style="font-size:24px"></div>
+      </div>
+    </div>
+    <svg class="layer" id="s3msvg"></svg>
+    <div class="abs hand" id="say3" style="left:40px; top:690px; width:250px; text-align:center; font-size:30px; line-height:1.05">Drafts only.<br>You post it.</div>
+  </div>
+
+  <!-- Scene 4: call to action -->
+  <div class="scene" id="s4">
+    <svg class="layer" id="s4svg"></svg>
+    <div class="abs eyebrow" id="e4" style="left:0; width:1080px; text-align:center; top:212px; font-size:18px">Introducing</div>
+    <div class="abs serif caption" id="title" style="top:244px; font-size:180px; line-height:0.95; padding-bottom:40px">Diff<em>Story</em></div>
+    <div class="abs inter" id="tag" style="left:0; width:1080px; text-align:center; top:450px; font-size:32px; line-height:1.45; color:#55514a">Stop asking what to post.<br>Your commits already wrote it.</div>
+    <div class="abs" id="pill4" style="left:0; width:1080px; text-align:center; top:572px"><span class="pill" style="margin:0"><span class="dot"></span>A Claude Code skill</span></div>
+    <div class="abs mono" id="url" style="left:0; width:1080px; text-align:center; top:672px; font-size:30px; color:#1c1b19">github.com/yuvraaj2002/DiffStory</div>
+    <div class="abs inter" id="foot" style="left:0; width:1080px; text-align:center; top:756px; font-size:19px; color:#8a8374">Free · Open source · Drafts only, never posts</div>
+    <div class="abs hand" id="say4" style="left:560px; top:885px; width:260px; text-align:center; font-size:34px">You're welcome.</div>
+  </div>
+
+  <img class="mascot" id="mFront" src="front.png">
+  <img class="mascot" id="mIdea" src="idea.png">
+
+  <svg class="grain" width="1080" height="1080"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4"/><feColorMatrix type="saturate" values="0"/></filter><rect width="1080" height="1080" filter="url(#n)"/></svg>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const prog = (t, t0, dur) => clamp((t - t0) / dur);
+const lerp = (a, b, p) => a + (b - a) * p;
+const easeOut = p => 1 - Math.pow(1 - p, 3);
+const easeIn = p => p * p * p;
+const easeInOut = p => p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+const easeBack = p => { const c = 1.6; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
+const INK = "#3d3a35", GRAPHITE = "#6b665d", PAPER = "#fffdf7";
+
+// ---------- sketch helpers ----------
+const drawables = [];
+let seed = 7;
+function sk(svg, make, t0, dur) {
+  const rc = rough.svg(svg);
+  const node = make(rc, ++seed);
+  svg.appendChild(node);
+  const paths = [...node.querySelectorAll("path")];
+  paths.forEach(p => {
+    if (p.getAttribute("stroke") === "none") p.dataset.fill = "1";
+    else { p.setAttribute("pathLength", "1"); p.style.strokeDasharray = "1 1"; }
+  });
+  drawables.push({ paths, t0, dur });
+  return node;
+}
+function drawSketches(t) {
+  for (const d of drawables) {
+    const p = d.dur ? prog(t, d.t0, d.dur) : (t >= d.t0 ? 1 : 0);
+    for (const el of d.paths) {
+      if (el.dataset.fill) el.style.opacity = easeOut(p);
+      else { el.style.strokeDashoffset = 1 - easeInOut(p); el.style.opacity = p > 0 ? 1 : 0; }
+    }
+  }
+}
+const o = (extra) => Object.assign({ roughness: 1.4, stroke: INK, strokeWidth: 2.2, bowing: 1.2 }, extra);
+function fade(el, t, t0, dur = 0.5, rise = 18) {
+  const p = easeOut(prog(t, t0, dur));
+  el.style.opacity = p;
+  el.style.transform = `translateY(${(1 - p) * rise}px)`;
+  return p;
+}
+function fadeOut(el, t, t0, dur = 0.4) { if (t > t0) el.style.opacity = Math.min(+el.style.opacity, 1 - prog(t, t0, dur)); }
+
+// ---------- scene 1: pile of work + empty composer ----------
+const s1svg = $("s1svg");
+const sheets = [
+  { x: 150, y: 750, r: -12, label: "diff" }, { x: 300, y: 768, r: 6, label: "commit" },
+  { x: 445, y: 752, r: -4, label: "PR summary" }, { x: 215, y: 648, r: 9, label: "fix: race" },
+  { x: 375, y: 640, r: -8, label: "diff sheet" }, { x: 160, y: 560, r: -16, label: "refactor" },
+  { x: 435, y: 548, r: 13, label: "commit" }, { x: 295, y: 540, r: 3, label: "diff" },
+  { x: 305, y: 440, r: -6, label: "feat: auth" },
+];
+sheets.forEach((s, i) => {
+  const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  s1svg.appendChild(g);
+  s.g = g; s.t0 = 0.45 + i * 0.36;
+  sk(g, (rc, sd) => rc.rectangle(-75, -95, 150, 190, o({ seed: sd, fill: PAPER, fillStyle: "solid", stroke: GRAPHITE, strokeWidth: 1.8 })), -1);
+  const tx = document.createElementNS("http://www.w3.org/2000/svg", "text");
+  tx.setAttribute("x", -58); tx.setAttribute("y", -60); tx.setAttribute("class", "hand");
+  tx.setAttribute("font-size", "22"); tx.setAttribute("fill", "#4a463f"); tx.textContent = s.label;
+  g.appendChild(tx);
+  const isDiff = s.label.includes("diff") || s.label.includes("PR");
+  [-38, -14, 10, 34, 58].forEach((ly, k) => {
+    if (isDiff && (k === 1 || k === 2)) {
+      sk(g, (rc, sd) => rc.rectangle(-58, ly - 7, 116, 13, { seed: sd, roughness: 1, stroke: "none", fill: k === 1 ? "#9fd3a8" : "#eba7a2", fillStyle: "hachure", hachureGap: 3, fillWeight: 1.4 }), -1);
+    } else {
+      sk(g, (rc, sd) => rc.line(-58, ly, -58 + 70 + ((k * 37 + i * 13) % 46), ly, o({ seed: sd, stroke: "#a39d90", strokeWidth: 1.6, roughness: 1 })), -1);
+    }
+  });
+});
+// laptop with empty composer
+sk(s1svg, (rc, sd) => rc.rectangle(605, 570, 400, 250, o({ seed: sd, fill: PAPER, fillStyle: "solid" })), 3.8, 0.7);
+sk(s1svg, (rc, sd) => rc.polygon([[585, 822], [1025, 822], [1050, 850], [560, 850]], o({ seed: sd, fill: "#e7e1d3", fillStyle: "solid" })), 4.1, 0.5);
+sk(s1svg, (rc, sd) => rc.circle(650, 618, 40, o({ seed: sd, stroke: GRAPHITE, fill: "#d9d2c2", fillStyle: "hachure", hachureGap: 5 })), 4.3, 0.4);
+sk(s1svg, (rc, sd) => rc.line(682, 618, 800, 618, o({ seed: sd, stroke: "#a39d90" })), 4.4, 0.3);
+sk(s1svg, (rc, sd) => rc.rectangle(895, 760, 90, 40, o({ seed: sd, stroke: "#b7b0a2", strokeWidth: 1.8 })), 4.5, 0.4);
+// thought bubble
+sk(s1svg, (rc, sd) => rc.circle(705, 548, 18, o({ seed: sd, stroke: GRAPHITE })), 5.0, 0.15);
+sk(s1svg, (rc, sd) => rc.circle(735, 520, 28, o({ seed: sd, stroke: GRAPHITE })), 5.12, 0.15);
+sk(s1svg, (rc, sd) => rc.ellipse(800, 440, 360, 130, o({ seed: sd, stroke: GRAPHITE, fill: PAPER, fillStyle: "solid" })), 5.25, 0.5);
+
+function scene1(t) {
+  const s1 = $("s1");
+  s1.style.display = t < 8.3 ? "block" : "none";
+  s1.style.opacity = 1 - prog(t, 7.6, 0.5);
+  fade($("c1a"), t, 0.15, 0.6);
+  fade($("c1b"), t, 5.6, 0.6);
+  for (const s of sheets) {
+    const p = prog(t, s.t0, 0.55);
+    const y = lerp(-260, s.y, easeBack(p));
+    const r = lerp(s.r + 35, s.r, easeOut(p));
+    s.g.setAttribute("transform", `translate(${s.x},${y}) rotate(${r})`);
+    s.g.style.opacity = p > 0 ? 1 : 0;
+  }
+  const n = Math.round(47 * easeOut(prog(t, 0.6, 3.4)));
+  $("count").textContent = n ? `${n} commits this week` : "";
+  fade($("placeholder"), t, 4.6, 0.4, 0);
+  $("cursor").style.opacity = t > 4.6 && Math.floor((t - 4.6) * 2) % 2 === 0 ? 1 : 0;
+  fade($("postbtn"), t, 4.7, 0.3, 0);
+  fade($("think"), t, 5.6, 0.4, 8);
+}
+
+// ---------- mascot placement ----------
+const M = { front: { el: $("mFront"), w: 302, h: 514 }, idea: { el: $("mIdea"), w: 171, h: 183 } };
+function placeMascot(m, cx, bottom, scale, opacity, rot = 0) {
+  const w = m.w * scale, h = m.h * scale;
+  m.el.style.opacity = opacity;
+  m.el.style.display = opacity > 0 ? "block" : "none";
+  m.el.style.transform = `translate(${cx - w / 2}px, ${bottom - h}px) rotate(${rot}deg) scale(${scale})`;
+  m.el.style.filter = "drop-shadow(0 10px 14px rgba(60,50,30,0.18))";
+}
+
+// ---------- scene 2: mascot arrives ----------
+const s2svg = $("s2svg");
+sk(s2svg, (rc, sd) => rc.ellipse(540, 245, 720, 220, o({ seed: sd, fill: "#ffffff", fillStyle: "solid", strokeWidth: 2.6 })), 8.85, 0.5);
+sk(s2svg, (rc, sd) => rc.linearPath([[505, 350], [530, 430], [575, 352]], o({ seed: sd, strokeWidth: 2.6 })), 9.2, 0.25);
+sk(s2svg, (rc, sd) => rc.ellipse(540, 1002, 300, 34, { seed: sd, roughness: 1.2, stroke: "none", fill: "#a39d90", fillStyle: "hachure", hachureGap: 4, fillWeight: 1 }), 8.3, 0.4);
+
+function scene2(t) {
+  const s2 = $("s2");
+  s2.style.display = t >= 8 && t < 12.4 ? "block" : "none";
+  s2.style.opacity = 1 - prog(t, 11.3, 0.5);
+  fade($("say2"), t, 9.35, 0.4, 10);
+}
+
+// ---------- scene 3: terminal, idea card, drafts ----------
+const s3a = $("s3asvg"), s3b = $("s3bsvg"), s3m = $("s3msvg");
+sk(s3a, (rc, sd) => rc.rectangle(90, 230, 900, 350, o({ seed: sd, fill: "#24221f", fillStyle: "solid", stroke: "#1c1b19", strokeWidth: 2.6, roughness: 1.1 })), 12.25, 0.6);
+["#e88b84", "#e9c46a", "#8fd19e"].forEach((c, i) =>
+  sk(s3a, (rc, sd) => rc.circle(122 + i * 30, 262, 15, { seed: sd, roughness: 0.8, stroke: "none", fill: c, fillStyle: "solid" }), 12.6, 0.2));
+sk(s3a, (rc, sd) => rc.rectangle(300, 620, 690, 270, o({ seed: sd, fill: PAPER, fillStyle: "solid", stroke: "#55514a" })), 16.2, 0.55);
+let scoreRing = null;
+sk(s3b, (rc, sd) => rc.rectangle(300, 232, 690, 306, o({ seed: sd, fill: PAPER, fillStyle: "solid", stroke: "#55514a" })), -1);
+sk(s3b, (rc, sd) => rc.rectangle(300, 572, 690, 320, o({ seed: sd, fill: PAPER, fillStyle: "solid", stroke: "#55514a" })), -1);
+sk(s3m, (rc, sd) => rc.ellipse(165, 735, 260, 112, o({ seed: sd, fill: "#ffffff", fillStyle: "solid" })), 21.2, 0.4);
+sk(s3m, (rc, sd) => rc.linearPath([[140, 788], [150, 830], [180, 790]], o({ seed: sd })), 21.45, 0.15);
+
+const TERM = [
+  { t: 14.0, c: "#8f897c", s: "Reading conversation + diffs…" },
+  { t: 14.45, c: "#e88b84", s: '-  git log --since="$FROM"' },
+  { t: 14.85, c: "#8fd19e", s: '+  git log --since="${FROM}T00:00:00"' },
+  { t: 15.25, c: "#8fd19e", s: '+            --until="${TO}T23:59:59"' },
+  { t: 15.75, c: "#e9a23b", s: "✓ 4 topics · 6 commits · secrets redacted" },
+];
+const XTEXT = 'git\'s --since with a bare date doesn\'t mean midnight. It means that day at the current time, so "since Oct 1" quietly skips every commit made earlier on Oct 1.\n\nPin T00:00:00 when you filter history by date.';
+const LITEXT = "A date filter in my tool was quietly losing data.\n\nThe cause: git reads a bare date in --since as \"that day, at the current time.\" Run it at 3pm and every morning commit simply vanishes from the range.\n\nThe fix was one line. Finding it took an afternoon.";
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+
+function scene3(t) {
+  const s3 = $("s3");
+  s3.style.display = t >= 11.9 && t < 24.4 ? "block" : "none";
+  s3.style.opacity = prog(t, 11.9, 0.4) * (1 - prog(t, 23.7, 0.5));
+  fade($("e3"), t, 12.1, 0.5, 8);
+  const ca = fade($("c3a"), t, 12.2, 0.5); fadeOut($("c3a"), t, 16.0);
+  fade($("c3b"), t, 16.3, 0.5); fadeOut($("c3b"), t, 19.2);
+  fade($("c3c"), t, 19.5, 0.5);
+
+  // terminal
+  const typed = "/diffstory".slice(0, Math.floor(clamp((t - 12.9) / 0.8) * 10));
+  const caret = t < 14 && Math.floor(t * 2.5) % 2 === 0 ? "▍" : "";
+  let html = t >= 12.6 ? `<span style="color:#e9a23b">❯</span> <span style="color:#fff;font-weight:600">${typed}</span>${caret}\n` : "";
+  for (const l of TERM) if (t >= l.t) html += `<span style="color:${l.c}">${esc(l.s)}</span>\n`;
+  $("term").innerHTML = html;
+
+  // idea card
+  const idea = $("idea");
+  fade(idea.children[0], t, 16.6, 0.4, 8);
+  fade(idea.children[1], t, 16.8, 0.5, 10);
+  fade(idea.children[2], t, 17.3, 0.5, 10);
+  if (scoreRing) {
+    const p = prog(t, 17.9, 0.5);
+    scoreRing.querySelectorAll("path").forEach(el => { el.style.strokeDashoffset = 1 - easeInOut(p); el.style.opacity = p > 0 ? 1 : 0; });
+  }
+
+  // swap: terminal + idea out, drafts in
+  const out = easeIn(prog(t, 19.0, 0.6));
+  $("s3a").style.transform = `translateX(${-1150 * out}px)`;
+  const xin = easeOut(prog(t, 19.35, 0.6)), lin = easeOut(prog(t, 19.75, 0.6));
+  $("s3b").style.display = t >= 19.35 ? "block" : "none";
+  $("s3bsvg").children[0].setAttribute("transform", `translate(${900 * (1 - xin)},0)`);
+  $("xcard").style.transform = `translateX(${900 * (1 - xin)}px)`;
+  $("s3bsvg").children[1].setAttribute("transform", `translate(${900 * (1 - lin)},0)`);
+  $("licard").style.transform = `translateX(${900 * (1 - lin)}px)`;
+  const xn = Math.floor(XTEXT.length * prog(t, 20.0, 2.0));
+  $("xtext").textContent = XTEXT.slice(0, xn);
+  $("xcount").textContent = `${xn} / 280`;
+  $("litext").textContent = LITEXT.slice(0, Math.floor(LITEXT.length * prog(t, 20.5, 2.6)));
+  fade($("say3"), t, 21.55, 0.35, 6);
+}
+
+// ---------- scene 4: call to action ----------
+const s4svg = $("s4svg");
+sk(s4svg, (rc, sd) => rc.rectangle(225, 652, 630, 76, o({ seed: sd, fill: PAPER, fillStyle: "solid", strokeWidth: 2.4 })), 26.0, 0.6);
+sk(s4svg, (rc, sd) => rc.ellipse(690, 905, 280, 100, o({ seed: sd, fill: "#ffffff", fillStyle: "solid" })), 27.5, 0.4);
+sk(s4svg, (rc, sd) => rc.linearPath([[815, 890], [862, 870], [818, 920]], o({ seed: sd })), 27.75, 0.15);
+
+function scene4(t) {
+  const s4 = $("s4");
+  s4.style.display = t >= 24.1 ? "block" : "none";
+  fade($("e4"), t, 24.3, 0.5, 8);
+  const p = easeInOut(prog(t, 24.5, 0.9));
+  const title = $("title");
+  title.style.clipPath = `inset(0 ${100 - p * 100}% 0 0)`;
+  title.style.opacity = p > 0 ? 1 : 0;
+  fade($("tag"), t, 25.3, 0.6);
+  fade($("pill4"), t, 25.8, 0.5);
+  fade($("url"), t, 26.4, 0.5, 0);
+  fade($("foot"), t, 26.8, 0.5, 8);
+  fade($("say4"), t, 27.8, 0.35, 6);
+}
+
+// ---------- mascot timeline across scenes ----------
+function mascot(t) {
+  const bob = Math.sin(t * 2.4) * 5;
+  let f = 0, cx = 540, bottom = 1000, sc = 1.09, rot = 0;
+  if (t >= 8.0 && t < 12.2) {
+    const pin = prog(t, 8.0, 0.75);
+    bottom = lerp(1000 + 700, 1000, easeBack(pin)) + (pin >= 1 ? bob : 0);
+    rot = (1 - easeOut(pin)) * -8;
+    const pm = easeInOut(prog(t, 11.4, 0.8));
+    cx = lerp(540, 160, pm); bottom = lerp(bottom, 1050, pm); sc = lerp(1.09, 0.5, pm);
+    f = 1;
+  } else if (t >= 12.2 && t < 20.2) {
+    cx = 160; bottom = 1050 + bob * 0.5; sc = 0.5; f = 1 - prog(t, 19.9, 0.3);
+  } else if (t >= 26.6) {
+    const pin = prog(t, 26.6, 0.6);
+    cx = 930; bottom = lerp(1400, 1072, easeBack(pin)) + (pin >= 1 ? bob * 0.6 : 0); sc = 0.56; f = 1;
+  }
+  placeMascot(M.front, cx, bottom, sc, f, rot);
+
+  let fi = 0, ib = 1050;
+  if (t >= 19.9 && t < 24.2) {
+    const pin = prog(t, 19.9, 0.45);
+    fi = clamp(pin * 3) * (1 - prog(t, 23.7, 0.5));
+    ib = lerp(1110, 1050, easeBack(pin)) + bob * 0.5;
+  }
+  placeMascot(M.idea, 165, ib, 1.25, fi);
+}
+
+window.render = function (t) {
+  drawSketches(t);
+  scene1(t); scene2(t); scene3(t); scene4(t);
+  mascot(t);
+};
+
+window.ready = (async () => {
+  await document.fonts.ready;
+  await Promise.all([...document.images].map(i => i.decode().catch(() => {})));
+  // amber ring around the score pill, sized to the laid-out text
+  const r = $("pscore").getBoundingClientRect(), st = $("stage").getBoundingClientRect();
+  const cx = r.left - st.left + r.width / 2, cy = r.top - st.top + r.height / 2;
+  scoreRing = rough.svg(s3a).ellipse(cx, cy, r.width + 34, r.height + 26, { seed: 99, roughness: 1.6, stroke: "#e9a23b", strokeWidth: 3.2 });
+  s3a.appendChild(scoreRing);
+  scoreRing.querySelectorAll("path").forEach(el => { el.setAttribute("pathLength", "1"); el.style.strokeDasharray = "1 1"; });
+  render(0);
+  return true;
+})();
+
+// Live preview when opened directly (not while rendering frames)
+if (!navigator.webdriver) {
+  window.ready.then(() => {
+    let start = performance.now();
+    document.addEventListener("click", () => (start = performance.now()));
+    const loop = now => { render(((now - start) / 1000) % 31); requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  });
+}
+</script>
+</body>
+</html>

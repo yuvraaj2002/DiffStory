@@ -6,6 +6,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/yuvraaj2002/DiffStory/actions/workflows/tests.yml"><img src="https://github.com/yuvraaj2002/DiffStory/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+">
   <img src="https://img.shields.io/badge/dependencies-none-brightgreen.svg" alt="No dependencies">

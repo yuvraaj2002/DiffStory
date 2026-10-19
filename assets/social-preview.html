@@ -1,0 +1,60 @@
+<!doctype html>
+<!-- Source for social-preview.png (GitHub social preview, 1280x640). Render from this folder:
+     chrome --headless=new --hide-scrollbars --window-size=1280,640
+            --virtual-time-budget=8000 --screenshot=social-preview.png social-preview.html -->
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=Patrick+Hand&display=block" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; background: #f8f4e9; }
+  .card { position: relative; width: 1280px; height: 640px; overflow: hidden; background: #f8f4e9; }
+
+  /* banner-art.png is 1024x338; scaled by 1.4 and anchored bottom-right */
+  .art {
+    position: absolute; right: 0; bottom: 0; width: 1434px; height: 473px;
+    background: url("banner-art.png") no-repeat 0 0 / 1434px 473px;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 90px);
+            mask-image: linear-gradient(to bottom, transparent 0, #000 90px);
+  }
+  .copy { position: absolute; left: 72px; top: 92px; width: 520px; }
+  .eyebrow {
+    font: 600 14px/1 "Inter", sans-serif; letter-spacing: 0.22em;
+    color: #8a8374; text-transform: uppercase; margin-bottom: 14px;
+  }
+  h1 {
+    margin: 0; font-family: "Instrument Serif", serif; font-weight: 400;
+    font-size: 124px; line-height: 0.95; letter-spacing: -0.015em; color: #1c1b19;
+  }
+  h1 em { font-style: italic; }
+  .tagline { margin: 20px 0 0; font: 400 23px/1.4 "Inter", sans-serif; color: #55514a; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 9px; margin-top: 26px;
+    padding: 9px 16px; border: 1px solid #d9d2c2; border-radius: 999px;
+    font: 500 15px/1 "Inter", sans-serif; color: #55514a; background: rgba(255,255,255,0.45);
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #e9a23b; box-shadow: 0 0 8px #f2b552; }
+
+  /* Dialogue inside the bubbles drawn in banner-art.png (art coords x1.4, offset by the art's left edge) */
+  .hand {
+    position: absolute; font-family: "Patrick Hand", cursive; text-align: center;
+    transform: translate(-50%, -50%); white-space: nowrap;
+  }
+  .say { left: calc(1280px - 1434px + 942px * 1.4); top: calc(640px - 473px + 74px * 1.4); font-size: 20px; line-height: 1.05; color: #1c1b19; }
+  .think { left: calc(1280px - 1434px + 697px * 1.4); top: calc(640px - 473px + 206px * 1.4); font-size: 13px; line-height: 1; color: #3d3a35; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="art"></div>
+    <div class="copy">
+      <div class="eyebrow">Introducing</div>
+      <h1>Diff<em>Story</em></h1>
+      <p class="tagline">Stop asking what to post.<br>Your commits already wrote it.</p>
+      <div class="pill"><span class="dot"></span>A Claude Code skill</div>
+    </div>
+    <div class="hand say">It's right behind<br>you, genius.</div>
+    <div class="hand think">what do I<br>even post?</div>
+  </div>
+</body>
+</html>

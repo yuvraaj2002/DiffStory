@@ -1,0 +1,32 @@
+name: Secret scanner
+description: A secret format the scanner misses, or a false positive it flags
+labels: [scanner]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Never paste a real secret, even a revoked one.** Replace every character with a fake value of the same shape, e.g. keep the `sk_live_` prefix and length but use random letters.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of problem
+      options:
+        - Missed secret (not redacted)
+        - False positive (redacted but not a secret)
+    validations:
+      required: true
+  - type: input
+    id: provider
+    attributes:
+      label: Provider or format
+      placeholder: e.g. Linear API key, Supabase service role key
+    validations:
+      required: true
+  - type: textarea
+    id: sample
+    attributes:
+      label: Fake example
+      description: A fake value with the same format, and a link to the provider's docs describing the format if you have one.
+      render: text
+    validations:
+      required: true

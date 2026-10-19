@@ -1,0 +1,32 @@
+name: Bug report
+description: Something in DiffStory doesn't work as described
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Please don't paste real secrets, private code or internal names. Security problems go through [private reporting](https://github.com/yuvraaj2002/DiffStory/security/advisories/new) instead.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: Steps or a script command that shows the problem, e.g. `python3 scripts/collect_git.py log HEAD -n 5`.
+  - type: input
+    id: agent
+    attributes:
+      label: Agent and version
+      placeholder: Claude Code 2.x
+  - type: input
+    id: environment
+    attributes:
+      label: OS, Python and Git versions
+      placeholder: macOS 15, Python 3.12, Git 2.47
+    validations:
+      required: true
